@@ -1,6 +1,6 @@
-articles_year <- function(collection, year){
+articles_year <- function(issn, collection, year){
   # Get total of articles
-  total <- articles(collection = collection, yearFrom = year, yearUntil = year, limit = 1)
+  total <- articles(issn = issn, collection = collection, yearFrom = year, yearUntil = year, limit = 1)
   total <- total$meta$total
 
   # Number of loops necessary
@@ -13,7 +13,7 @@ articles_year <- function(collection, year){
   for(i in 1:loops){
     offset <- (i-1)*1000
 
-    result <- articles(collection = collection, yearFrom = year, yearUntil = year, offset = offset)
+    result <- articles(issn = issn, collection = collection, yearFrom = year, yearUntil = year, offset = offset)
     result <- result$objects
     results <- dplyr::bind_rows(results, result)
   }
