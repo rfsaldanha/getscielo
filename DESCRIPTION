@@ -1,11 +1,11 @@
 Package: getscielo
 Type: Package
-Title: What the Package Does (Title Case)
+Title: getScielo
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Raphael de Freitas Saldanha
+Maintainer: Raphael de Freitas Saldanha <raphael.saldanha@icict.fiocruz.br>
+Description: Get metadata from Scielo.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Imports: jsonlite, dplyr, XML
