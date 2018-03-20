@@ -65,7 +65,7 @@ article_meta <- function(code, format = "xmlcrossref"){
     for(i in citation_list){
       i <- as.data.frame(i)
       i$source <- article_identifier
-      df_citation <- dplyr::bind_rows(df_citation, i)
+      suppressWarnings(df_citation <- dplyr::bind_rows(df_citation, i))
     }
   }
 
