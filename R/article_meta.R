@@ -1,6 +1,7 @@
-article_meta <- function(code, format = "xmlcrossref"){
+article_meta <- function(code){
   api_url <- "http://articlemeta.scielo.org"
   use <- "/api/v1/article/"
+  format <- "xmlcrossref"
   param1 <- paste0("?code=", code)
   param2 <- paste0("&format=", format)
   url <- paste0(api_url, use, param1, param2)
