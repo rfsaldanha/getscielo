@@ -1,4 +1,4 @@
-article_meta <- function(code){
+article_meta_wos <- function(code, save_xml){
   api_url <- "http://articlemeta.scielo.org"
   use <- "/api/v1/article/"
   format <- "xmlwos"
@@ -6,20 +6,28 @@ article_meta <- function(code){
   param2 <- paste0("&format=", format)
   url <- paste0(api_url, use, param1, param2)
 
-  result <- XML::xmlParse(url)
+  if(save_xml == TRUE){
+    download.file(url, paste0(code, ".xml"), mode = "wb")
+    result <- XML::xmlParse(paste0(code, ".xml"))
+  } else {
+    result <- XML::xmlParse(url)
+  }
+
   result <- XML::xmlToList(result)
 
   ### Journal data
   journal_id <- result$article$front$`journal-meta`$`journal-id`$text
+  journal_id_type <- result$article$front$`journal-meta`$`journal-id`$.attrs[1]
   journal_title <- result$article$front$`journal-meta`$`journal-title-group`$`journal-title`
   journal_abbrev_title <- result$article$front$`journal-meta`$`journal-title-group`$`abbrev-journal-title`
   journal_issn <- result$article$front$`journal-meta`$issn
   journal_collection <- result$article$front$`journal-meta`$collection
-  journal_publisher <- result$article$front$`journal-meta`$publisher$`publisher-name`
+  journal_publisher_name <- result$article$front$`journal-meta`$publisher$`publisher-name`
 
   ### Article data
 
   # Simple fields
+  article_language <- result$article$.attrs[1]
   article_type <- result$article$.attrs[2]
   article_unique_id <- result$article$front$`article-meta`$`unique-article-id`$text
   article_publisher_id <- result$article$front$`article-meta`$`article-id`$text
@@ -28,6 +36,7 @@ article_meta <- function(code){
   article_title_lang <- result$article$front$`article-meta`$`title-group`$`article-title`$.attrs[1]
   article_translated_title <- result$article$front$`article-meta`$`title-group`$`trans-title-group`$`trans-title`
   article_translated_title_lang <- result$article$front$`article-meta`$`title-group`$`trans-title-group`$.attrs[1]
+  article_pub_date_day <- result$article$front$`article-meta`$`pub-date`$day
   article_pub_date_month <- result$article$front$`article-meta`$`pub-date`$month
   article_pub_date_year <- result$article$front$`article-meta`$`pub-date`$year
   article_volume <- result$article$front$`article-meta`$volume
@@ -43,6 +52,7 @@ article_meta <- function(code){
 
   # List fields
   article_contributors <- result$article$front$`article-meta`$`contrib-group`
+  article_contributors_count <- length(article_contributors)
   article_contributors_names <- NULL
   article_contributors_roles <- NULL
   article_contributors_aff <- result$article$front$`article-meta`
@@ -73,6 +83,14 @@ article_meta <- function(code){
   }
 
   df_articles <- data.frame(
+    article_language = ifelse(!is.null(article_language), as.character(article_language), NA),
+    journal_id = ifelse(!is.null(journal_id), journal_id, NA),
+    journal_id_type = ifelse(!is.null(journal_id_type), journal_id_type, NA),
+    journal_title = ifelse(!is.null(journal_title), journal_title, NA),
+    journal_abbrev_title = ifelse(!is.null(journal_abbrev_title), journal_abbrev_title, NA),
+    journal_issn = ifelse(!is.null(journal_issn), journal_issn, NA),
+    journal_collection = ifelse(!is.null(journal_collection), journal_collection, NA),
+    journal_publisher_name = ifelse(!is.null(journal_publisher_name), journal_publisher_name, NA),
     article_type = ifelse(!is.null(article_type), article_type, NA),
     article_unique_id = ifelse(!is.null(article_unique_id), article_unique_id, NA),
     article_publisher_id = ifelse(!is.null(article_publisher_id), article_publisher_id, NA),
@@ -81,6 +99,7 @@ article_meta <- function(code){
     article_title_lang = ifelse(!is.null(article_title_lang), article_title_lang, NA),
     article_translated_title = ifelse(!is.null(article_translated_title), article_translated_title, NA),
     article_translated_title_lang = ifelse(!is.null(article_translated_title_lang), article_translated_title_lang, NA),
+    article_pub_date_day = ifelse(!is.null(article_pub_date_day), article_pub_date_day, NA),
     article_pub_date_month = ifelse(!is.null(article_pub_date_month), article_pub_date_month, NA),
     article_pub_date_year = ifelse(!is.null(article_pub_date_year), article_pub_date_year, NA),
     article_volume = ifelse(!is.null(article_volume), article_volume, NA),
@@ -93,27 +112,33 @@ article_meta <- function(code){
     article_abstract_lang = ifelse(!is.null(article_abstract_lang), article_abstract_lang, NA),
     article_trans_abstract = ifelse(!is.null(article_trans_abstract), article_trans_abstract, NA),
     article_trans_abstract_lang = ifelse(!is.null(article_trans_abstract_lang), article_trans_abstract_lang, NA),
+    article_contributors_count = ifelse(!is.null(article_contributors_count), article_contributors_count, NA),
     article_contributors_names = ifelse(!is.null(article_contributors_names), article_contributors_names, NA),
     article_contributors_roles = ifelse(!is.null(article_contributors_roles), article_contributors_roles, NA),
     article_contributors_affiliation_institution = ifelse(!is.null(article_contributors_affiliation_institution), article_contributors_affiliation_institution, NA),
     article_contributors_affiliation_country = ifelse(!is.null(article_contributors_affiliation_country), article_contributors_affiliation_country, NA)
   )
 
+  # Factor variables to character
+  df_articles %>% dplyr::mutate_if(is.factor, as.character) %>% as.data.frame -> df_articles
+
+
+
   ### Citation data
-  # citation_list <- result$body$journal$journal_article$citation_list
-  # df_citation <- data.frame()
-  # if(!is.null(citation_list)){
-  #   citation_list <- citation_list[names(citation_list) == "citation"]
-  #   for(i in citation_list){
-  #     i <- as.data.frame(i)
-  #     i$source <- article_identifier
-  #     suppressWarnings(df_citation <- dplyr::bind_rows(df_citation, i))
-  #   }
-  # }
+  citation_list <- result$article$back$`ref-list`
+  df_citation <- data.frame()
+  if(!is.null(citation_list)){
+    citation_list <- citation_list[names(citation_list) == "ref"]
+    for(i in citation_list){
+      i <- as.data.frame(i)
+      i$source <- article_unique_id
+      i$count <- length(citation_list)
+      df_citation <- suppressWarnings(dplyr::bind_rows(df_citation, i))
+    }
+  }
 
   ### Results
-  #list_df <- list(df_articles = df_articles, df_citation = df_citation)
-  list_df <- list(df_articles = df_articles, df_citation = NA)
+  list_df <- list(df_articles = df_articles, df_citation = df_citation)
 
   return(list_df)
 }
