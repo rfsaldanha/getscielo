@@ -16,39 +16,95 @@ article_meta_wos <- function(code, save_xml){
   result <- XML::xmlToList(result)
 
   ### Journal data
-  journal_id <- result$article$front$`journal-meta`$`journal-id`$text
-  journal_id_type <- result$article$front$`journal-meta`$`journal-id`$.attrs[1]
-  journal_title <- result$article$front$`journal-meta`$`journal-title-group`$`journal-title`
-  journal_abbrev_title <- result$article$front$`journal-meta`$`journal-title-group`$`abbrev-journal-title`
-  journal_issn <- result$article$front$`journal-meta`$issn
-  journal_collection <- result$article$front$`journal-meta`$collection
-  journal_publisher_name <- result$article$front$`journal-meta`$publisher$`publisher-name`
+  journal_id <- try(result$article$front$`journal-meta`$`journal-id`$text, silent = TRUE)
+  journal_id <- ifelse(class(journal_id) %in% c("try-error", "NULL"), NA, journal_id)
+
+  journal_id_type <- try(result$article$front$`journal-meta`$`journal-id`$.attrs[1], silent = TRUE)
+  journal_id_type <- ifelse(class(journal_id_type) %in% c("try-error", "NULL"), NA, journal_id_type)
+
+  journal_title <- try(result$article$front$`journal-meta`$`journal-title-group`$`journal-title`, silent = TRUE)
+  journal_title <- ifelse(class(journal_title) %in% c("try-error", "NULL"), NA, journal_title)
+
+  journal_abbrev_title <- try(result$article$front$`journal-meta`$`journal-title-group`$`abbrev-journal-title`, silent = TRUE)
+  journal_abbrev_title <- ifelse(class(journal_abbrev_title) %in% c("try-error", "NULL"), NA, journal_abbrev_title)
+
+  journal_issn <- try(result$article$front$`journal-meta`$issn, silent = TRUE)
+  journal_issn <- ifelse(class(journal_issn) %in% c("try-error", "NULL"), NA, journal_issn)
+
+  journal_collection <- try(result$article$front$`journal-meta`$collection, silent = TRUE)
+  journal_collection <- ifelse(class(journal_collection) %in% c("try-error", "NULL"), NA, journal_collection)
+
+  journal_publisher_name <- try(result$article$front$`journal-meta`$publisher$`publisher-name`, silent = TRUE)
+  journal_publisher_name <- ifelse(class(journal_publisher_name) %in% c("try-error", "NULL"), NA, journal_publisher_name)
 
   ### Article data
 
   # Simple fields
-  article_language <- result$article$.attrs[1]
-  article_type <- result$article$.attrs[2]
-  article_unique_id <- result$article$front$`article-meta`$`unique-article-id`$text
-  article_publisher_id <- result$article$front$`article-meta`$`article-id`$text
-  article_subject <- result$article$front$`article-meta`$`article-categories`$`subj-group`$subject
-  article_title <- result$article$front$`article-meta`$`title-group`$`article-title`$text
-  article_title_lang <- result$article$front$`article-meta`$`title-group`$`article-title`$.attrs[1]
-  article_translated_title <- result$article$front$`article-meta`$`title-group`$`trans-title-group`$`trans-title`
-  article_translated_title_lang <- result$article$front$`article-meta`$`title-group`$`trans-title-group`$.attrs[1]
-  article_pub_date_day <- result$article$front$`article-meta`$`pub-date`$day
-  article_pub_date_month <- result$article$front$`article-meta`$`pub-date`$month
-  article_pub_date_year <- result$article$front$`article-meta`$`pub-date`$year
-  article_volume <- result$article$front$`article-meta`$volume
-  article_issue <- result$article$front$`article-meta`$issue
-  article_first_page <- result$article$front$`article-meta`$fpage
-  article_last_page <- result$article$front$`article-meta`$lpage
-  article_license_type <- result$article$front$`article-meta`$permissions$license$.attrs[1]
-  article_license_text <- result$article$front$`article-meta`$permissions$license$`license-p`
-  article_abstract <- result$article$front$`article-meta`$abstract$p
-  article_abstract_lang <- result$article$front$`article-meta`$abstract$.attrs[1]
-  article_trans_abstract <- result$article$front$`article-meta`$`trans-abstract`$p
-  article_trans_abstract_lang <- result$article$front$`article-meta`$`trans-abstract`$.attrs[1]
+  article_language <- try(result$article$.attrs[1], silent = TRUE)
+  article_language <- ifelse(class(article_language) %in% c("try-error", "NULL"), NA, article_language)
+
+  article_type <- try(result$article$.attrs[2], silent = TRUE)
+  article_type  <- ifelse(class(article_type) %in% c("try-error", "NULL"), NA, article_type)
+
+  article_unique_id <- try(result$article$front$`article-meta`$`unique-article-id`$text, silent = TRUE)
+  article_unique_id <- ifelse(class(article_unique_id) %in% c("try-error", "NULL"), NA, article_unique_id)
+
+  article_publisher_id <- try(result$article$front$`article-meta`$`article-id`$text, silent = TRUE)
+  article_publisher_id <- ifelse(class(article_publisher_id) %in% c("try-error", "NULL"), NA, article_publisher_id)
+
+  article_subject <- try(result$article$front$`article-meta`$`article-categories`$`subj-group`$subject, silent = TRUE)
+  article_subject <- ifelse(class(article_subject) %in% c("try-error", "NULL"), NA, article_subject)
+
+  article_title <- try(result$article$front$`article-meta`$`title-group`$`article-title`$text, silent = TRUE)
+  article_title <- ifelse(class(article_title) %in% c("try-error", "NULL"), NA, article_title)
+
+  article_title_lang <- try(result$article$front$`article-meta`$`title-group`$`article-title`$.attrs[1], silent = TRUE)
+  article_title_lang <- ifelse(class(article_title_lang) %in% c("try-error", "NULL"), NA, article_title_lang)
+
+  article_translated_title <- try(result$article$front$`article-meta`$`title-group`$`trans-title-group`$`trans-title`, silent = TRUE)
+  article_translated_title <- ifelse(class(article_translated_title) %in% c("try-error", "NULL"), NA, article_translated_title)
+
+  article_translated_title_lang <- try(result$article$front$`article-meta`$`title-group`$`trans-title-group`$.attrs[1], silent = TRUE)
+  article_translated_title_lang <- ifelse(class(article_translated_title_lang) %in% c("try-error", "NULL"), NA, article_translated_title_lang)
+
+  article_pub_date_day <- try(result$article$front$`article-meta`$`pub-date`$day, silent = TRUE)
+  article_pub_date_day <- ifelse(class(article_pub_date_day) %in% c("try-error", "NULL"), NA, article_pub_date_day)
+
+  article_pub_date_month <- try(result$article$front$`article-meta`$`pub-date`$month, silent = TRUE)
+  article_pub_date_month <- ifelse(class(article_pub_date_month) %in% c("try-error", "NULL"), NA, article_pub_date_month)
+
+  article_pub_date_year <- try(result$article$front$`article-meta`$`pub-date`$year, silent = TRUE)
+  article_pub_date_year <- ifelse(class(article_pub_date_year) %in% c("try-error", "NULL"), NA, article_pub_date_year)
+
+  article_volume <- try(result$article$front$`article-meta`$volume, silent = TRUE)
+  article_volume <- ifelse(class(article_volume) %in% c("try-error", "NULL"), NA, article_volume)
+
+  article_issue <- try(result$article$front$`article-meta`$issue, silent = TRUE)
+  article_issue <- ifelse(class(article_issue) %in% c("try-error", "NULL"), NA, article_issue)
+
+  article_first_page <- try(result$article$front$`article-meta`$fpage, silent = TRUE)
+  article_first_page <- ifelse(class(article_first_page) %in% c("try-error", "NULL"), NA, article_first_page)
+
+  article_last_page <- try(result$article$front$`article-meta`$lpage, silent = TRUE)
+  article_last_page <- ifelse(class(article_last_page) %in% c("try-error", "NULL"), NA, article_last_page)
+
+  article_license_type <- try(result$article$front$`article-meta`$permissions$license$.attrs[1], silent = TRUE)
+  article_license_type <- ifelse(class(article_license_type) %in% c("try-error", "NULL"), NA, article_license_type)
+
+  article_license_text <- try(result$article$front$`article-meta`$permissions$license$`license-p`, silent = TRUE)
+  article_license_text <- ifelse(class(article_license_text) %in% c("try-error", "NULL"), NA, article_license_text)
+
+  article_abstract <- try(result$article$front$`article-meta`$abstract$p, silent = TRUE)
+  article_abstract <- ifelse(class(article_abstract) %in% c("try-error", "NULL"), NA, article_abstract)
+
+  article_abstract_lang <- try(result$article$front$`article-meta`$abstract$.attrs[1], silent = TRUE)
+  article_abstract_lang <- ifelse(class(article_abstract_lang) %in% c("try-error", "NULL"), NA, article_abstract_lang)
+
+  article_trans_abstract <- try(result$article$front$`article-meta`$`trans-abstract`$p, silent = TRUE)
+  article_trans_abstract <- ifelse(class(article_trans_abstract) %in% c("try-error", "NULL"), NA, article_trans_abstract)
+
+  article_trans_abstract_lang <- try(result$article$front$`article-meta`$`trans-abstract`$.attrs[1], silent = TRUE)
+  article_trans_abstract_lang <- ifelse(class(article_trans_abstract_lang) %in% c("try-error", "NULL"), NA, article_trans_abstract_lang)
 
   # List fields
   article_contributors <- result$article$front$`article-meta`$`contrib-group`
