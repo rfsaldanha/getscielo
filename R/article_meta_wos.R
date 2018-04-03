@@ -1,13 +1,5 @@
 article_meta_wos <- function(code){
 
-  result <- tryCatch({
-    XML::xmlToList(XML::xmlParse(paste0(code, ".xml")))
-  }, error = function(e){
-    paste("Erro com: ", code)
-  })
-
-  ###
-
   result <- XML::xmlParse(paste0(code, ".xml"))
   result <- XML::xmlToList(result)
 
