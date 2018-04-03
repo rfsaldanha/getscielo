@@ -1,18 +1,14 @@
-article_meta_wos <- function(code, save_xml){
-  api_url <- "http://articlemeta.scielo.org"
-  use <- "/api/v1/article/"
-  format <- "xmlwos"
-  param1 <- paste0("?code=", code)
-  param2 <- paste0("&format=", format)
-  url <- paste0(api_url, use, param1, param2)
+article_meta_wos <- function(code){
 
-  if(save_xml == TRUE){
-    download.file(url, paste0(code, ".xml"), mode = "wb")
-    result <- XML::xmlParse(paste0(code, ".xml"))
-  } else {
-    result <- XML::xmlParse(url)
-  }
+  result <- tryCatch({
+    XML::xmlToList(XML::xmlParse(paste0(code, ".xml")))
+  }, error = function(e){
+    paste("Erro com: ", code)
+  })
 
+  ###
+
+  result <- XML::xmlParse(paste0(code, ".xml"))
   result <- XML::xmlToList(result)
 
   ### Journal data
@@ -107,6 +103,17 @@ article_meta_wos <- function(code, save_xml){
   article_trans_abstract_lang <- ifelse(class(article_trans_abstract_lang) %in% c("try-error", "NULL"), NA, article_trans_abstract_lang)
 
   # List fields
+  article_keywords_group <- result$article$front$`article-meta`$`kwd-group`
+  article_keywords_count <- length(article_keywords_group)
+  article_keywords <- NULL
+  if(!is.null(article_keywords_group)){
+    article_keywords_group <- article_keywords_group[names(article_keywords_group) == "kwd"]
+    for(i in article_keywords_group){
+      article_keywords <- c(article_keywords, i)
+    }
+    article_keywords <- paste(article_keywords, collapse = " # ")
+  }
+
   article_contributors <- result$article$front$`article-meta`$`contrib-group`
   article_contributors_count <- length(article_contributors)
   article_contributors_names <- NULL
@@ -168,6 +175,8 @@ article_meta_wos <- function(code, save_xml){
     article_abstract_lang = ifelse(!is.null(article_abstract_lang), article_abstract_lang, NA),
     article_trans_abstract = ifelse(!is.null(article_trans_abstract), article_trans_abstract, NA),
     article_trans_abstract_lang = ifelse(!is.null(article_trans_abstract_lang), article_trans_abstract_lang, NA),
+    article_keywords_count = ifelse(!is.null(article_keywords_count), article_keywords_count, NA),
+    article_keywords = ifelse(!is.null(article_keywords), article_keywords, NA),
     article_contributors_count = ifelse(!is.null(article_contributors_count), article_contributors_count, NA),
     article_contributors_names = ifelse(!is.null(article_contributors_names), article_contributors_names, NA),
     article_contributors_roles = ifelse(!is.null(article_contributors_roles), article_contributors_roles, NA),
