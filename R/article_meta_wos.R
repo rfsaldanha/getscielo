@@ -184,13 +184,84 @@ article_meta_wos <- function(code){
   ### Citation data
   citation_list <- result$article$back$`ref-list`
   df_citation <- data.frame()
+
   if(!is.null(citation_list)){
     citation_list <- citation_list[names(citation_list) == "ref"]
     for(i in citation_list){
-      i <- as.data.frame(i)
-      i$source <- article_unique_id
-      i$count <- length(citation_list)
-      df_citation <- suppressWarnings(dplyr::bind_rows(df_citation, i))
+
+      citation_order <- try(i$.attrs, silent = TRUE)
+      citation_order <- ifelse(class(citation_order) %in% c("try-error", "NULL"), NA, citation_order)
+
+      citation_type <- try(i$`element-citation`$.attrs, silent = TRUE)
+      citation_type <- ifelse(class(citation_type) %in% c("try-error", "NULL"), "undefined", citation_type)
+
+      if(citation_type == "article"){
+        citation_title <- try(i$`element-citation`$`article-title`, silent = TRUE)
+        citation_title <- ifelse(class(citation_title) %in% c("try-error", "NULL"), NA, citation_title)
+
+        citation_source <- try(i$`element-citation`$source, silent = TRUE)
+        citation_source <- ifelse(class(citation_source) %in% c("try-error", "NULL"), NA, citation_source)
+      } else {
+        citation_title <- try(i$`element-citation`$source, silent = TRUE)
+        citation_title <- ifelse(class(citation_title) %in% c("try-error", "NULL"), NA, citation_title)
+        citation_source <- NA
+      }
+
+      citation_month <- try(i$`element-citation`$date$month, silent = TRUE)
+      citation_month <- ifelse(class(citation_month) %in% c("try-error", "NULL"), NA, citation_month)
+
+      citation_year <- try(i$`element-citation`$date$year, silent = TRUE)
+      citation_year <- ifelse(class(citation_year) %in% c("try-error", "NULL"), NA, citation_year)
+
+      citation_fpage <- try(i$`element-citation`$fpage, silent = TRUE)
+      citation_fpage <- ifelse(class(citation_fpage) %in% c("try-error", "NULL"), NA, citation_fpage)
+
+      citation_lpage <- try(i$`element-citation`$lpage, silent = TRUE)
+      citation_lpage <- ifelse(class(citation_lpage) %in% c("try-error", "NULL"), NA, citation_lpage)
+
+      citation_issue <- try(i$`element-citation`$issue, silent = TRUE)
+      citation_issue <- ifelse(class(citation_issue) %in% c("try-error", "NULL"), NA, citation_issue)
+
+      citation_volume <- try(i$`element-citation`$volume, silent = TRUE)
+      citation_volume <- ifelse(class(citation_volume) %in% c("try-error", "NULL"), NA, citation_volume)
+
+      citation_ext_link <- try(i$`element-citation`$`ext-link`, silent = TRUE)
+      citation_ext_link <- ifelse(class(citation_ext_link) %in% c("try-error", "NULL"), NA, citation_ext_link)
+
+      citation_contributors_group <- try(i$`element-citation`$`person-group`, silent = TRUE)
+      #citation_contributors_group <- ifelse(class(citation_contributors_group) %in% c("try-error", "NULL"), NA, citation_contributors_group)
+
+      citation_contributors <- NULL
+      if(!is.null(citation_contributors_group)){
+        citation_contributors_group <- citation_contributors_group[names(citation_contributors_group) == "name"]
+        for(c in citation_contributors_group){
+          surname <- c$surname
+          given_name <- c$`given-names`
+          contributor <- paste(given_name, surname)
+          citation_contributors <- c(citation_contributors, contributor)
+        }
+        citation_contributors <- citation_contributors[!duplicated(citation_contributors)]
+        citation_contributors <- paste(citation_contributors, collapse = " # ")
+      }
+
+      citation <- data.frame(
+        citation_origin = ifelse(is.null(article_unique_id), NA, article_unique_id),
+        citation_order = ifelse(is.null(citation_order), NA, citation_order),
+        citation_type = ifelse(is.null(citation_type), NA, citation_type),
+        citation_title = ifelse(is.null(citation_title), NA, citation_title),
+        citation_source = ifelse(is.null(citation_source), NA, citation_source),
+        citation_month = ifelse(is.null(citation_month), NA, citation_month),
+        citation_year = ifelse(is.null(citation_year), NA, citation_year),
+        citation_fpage = ifelse(is.null(citation_fpage), NA, citation_fpage),
+        citation_lpage = ifelse(is.null(citation_lpage), NA, citation_lpage),
+        citation_issue = ifelse(is.null(citation_issue), NA, citation_issue),
+        citation_volume = ifelse(is.null(citation_volume), NA, citation_volume),
+        citation_ext_link = ifelse(is.null(citation_ext_link), NA, citation_ext_link),
+        citation_contributors = ifelse(is.null(citation_contributors), NA, citation_contributors)
+      )
+
+      df_citation <- suppressWarnings(dplyr::bind_rows(df_citation, citation))
+
     }
   }
 
