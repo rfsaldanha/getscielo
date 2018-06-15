@@ -1,6 +1,9 @@
 article_meta_wos <- function(code){
 
-  result <- XML::xmlParse(paste0(code, ".xml"))
+  url <- paste0(code, ".xml")
+  
+  result <- XML::xmlParse(url)
+  
   result <- XML::xmlToList(result)
 
   ### Journal data
