@@ -229,7 +229,7 @@ article_meta_wos <- function(code){
       citation_volume <- ifelse(class(citation_volume) %in% c("try-error", "NULL"), NA, citation_volume)
 
       citation_ext_link <- try(i$`element-citation`$`ext-link`, silent = TRUE)
-      citation_ext_link <- ifelse(class(citation_ext_link) %in% c("try-error", "NULL"), NA, citation_ext_link)
+      citation_ext_link <- ifelse(class(citation_ext_link) %in% c("try-error", "NULL"), NA, citation_ext_link$text)
 
       citation_contributors_group <- try(i$`element-citation`$`person-group`, silent = TRUE)
       #citation_contributors_group <- ifelse(class(citation_contributors_group) %in% c("try-error", "NULL"), NA, citation_contributors_group)
